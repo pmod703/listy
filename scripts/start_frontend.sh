@@ -3,7 +3,7 @@
 echo "🚀 Starting Real Estate Open Home Optimizer Frontend..."
 echo "📂 Navigating to React app directory..."
 
-cd my-real-estate-app
+cd frontend
 
 echo "📦 Installing/updating Node.js dependencies..."
 npm install

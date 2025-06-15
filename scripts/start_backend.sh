@@ -16,4 +16,4 @@ echo "🌐 Installing Playwright browsers..."
 playwright install firefox
 
 echo "🚀 Starting Flask API server..."
-python integrated_api.py
+python backend/api/integrated_api.py

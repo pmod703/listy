@@ -21,7 +21,7 @@
 
 ## 📍 Application URLs
 
-- **Frontend**: 
+- **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5001
 - **Health Check**: http://localhost:5001/api/health
 - **Mock Data**: http://localhost:5001/api/mock-data

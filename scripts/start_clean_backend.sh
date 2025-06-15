@@ -31,4 +31,4 @@ echo ""
 echo "Press Ctrl+C to stop the server"
 echo ""
 
-python clean_api.py
+python backend/api/clean_api.py

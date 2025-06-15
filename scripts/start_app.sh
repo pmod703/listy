@@ -4,19 +4,19 @@ echo "🏠 Real Estate Open Home Optimizer - Full Stack Startup"
 echo "=================================================="
 
 # Make scripts executable
-chmod +x start_backend.sh
-chmod +x start_clean_backend.sh
-chmod +x start_frontend.sh
+chmod +x scripts/start_backend.sh
+chmod +x scripts/start_clean_backend.sh
+chmod +x scripts/start_frontend.sh
 
 echo "🔧 Starting clean backend server in background (no scraping)..."
-./start_clean_backend.sh &
+./scripts/start_clean_backend.sh &
 BACKEND_PID=$!
 
 echo "⏳ Waiting for backend to start..."
 sleep 5
 
 echo "🌐 Starting frontend development server..."
-./start_frontend.sh &
+./scripts/start_frontend.sh &
 FRONTEND_PID=$!
 
 echo ""
