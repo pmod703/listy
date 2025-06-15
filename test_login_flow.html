@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3730a3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Authentication Flow Test</h1>
+    <p>This page tests the authentication endpoints to verify the login flow works correctly.</p>
+
+    <div class="test-section">
+        <h2>1. Backend Health Check</h2>
+        <button onclick="testHealth()">Check Backend Health</button>
+        <div id="health-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Login Test</h2>
+        <p>Test login with demo credentials:</p>
+        <button onclick="testLogin('demo@realestate.com', 'DemoPass123!')">Login as Demo User</button>
+        <button onclick="testLogin('agent@realestate.com', 'AgentPass123!')">Login as Agent</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Token Validation Test</h2>
+        <p>Test if the received token is valid:</p>
+        <button onclick="testTokenValidation()">Validate Token</button>
+        <div id="token-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. User Info Test</h2>
+        <p>Get current user information:</p>
+        <button onclick="testUserInfo()">Get User Info</button>
+        <div id="user-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Frontend Test</h2>
+        <p>Test the frontend application:</p>
+        <button onclick="openFrontend()">Open Frontend</button>
+        <div id="frontend-result" class="result info">
+            Frontend should be available at: <a href="http://localhost:3000" target="_blank">http://localhost:3000</a>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = null;
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            try {
+                const response = await fetch('http://localhost:5001/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Backend is healthy!\n\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Backend health check failed: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error connecting to backend: ${error.message}`;
+            }
+        }
+
+        async function testLogin(email, password) {
+            const resultDiv = document.getElementById('login-result');
+            try {
+                const response = await fetch('http://localhost:5001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentToken = data.access_token;
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Login successful!\n\nUser: ${data.user.first_name} ${data.user.last_name}\nEmail: ${data.user.email}\nAgency: ${data.user.agency_name}\n\nToken received and stored for further tests.`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Login failed: ${data.error || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error during login: ${error.message}`;
+            }
+        }
+
+        async function testTokenValidation() {
+            const resultDiv = document.getElementById('token-result');
+            
+            if (!currentToken) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ No token available. Please login first.';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5001/api/auth/validate-token', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.valid) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Token is valid!\n\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Token validation failed: ${data.message || 'Invalid token'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error validating token: ${error.message}`;
+            }
+        }
+
+        async function testUserInfo() {
+            const resultDiv = document.getElementById('user-result');
+            
+            if (!currentToken) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ No token available. Please login first.';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5001/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ User info retrieved!\n\n${JSON.stringify(data.user, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Failed to get user info: ${data.error || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error getting user info: ${error.message}`;
+            }
+        }
+
+        function openFrontend() {
+            window.open('http://localhost:3000', '_blank');
+        }
+
+        // Auto-run health check on page load
+        window.addEventListener('load', testHealth);
+    </script>
+</body>
+</html>
